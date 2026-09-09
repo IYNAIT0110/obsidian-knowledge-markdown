@@ -132,7 +132,74 @@ TreeSnapshot 数据结构。
 - 模块化：Runtime、Plugin、Analyzer、Tests 可独立后再分 Worktree。
 - 规模化：长期 Agent 角色、模型路由、Token 预算、集中日志，再引入 Multica 或 Linear。
 
-## 九、自测
+## 九、Core 与 UI：什么时候并行更好
+
+Core 与 UI 可以使用同一个 GH Coding Agent 配置。并行真正依赖的是两个独立 Run，而不是两个不同 Agent 名称。
+
+### 适合并行
+
+- Core 与 UI 的职责边界清楚；
+- 接口 Contract 已经稳定；
+- 数据结构和错误状态已约定；
+- 两边修改文件重叠少；
+- 可以分别测试和合并。
+
+```text
+先确定 Contract
+├─ TreeAnalysisResult
+├─ EmptyBranches
+├─ NullItems
+├─ Warnings
+└─ Summary
+
+然后并行
+├─ Run A → Core → Branch / Worktree A
+└─ Run B → UI   → Branch / Worktree B
+```
+
+### 不适合立即并行
+
+若 UI 还不知道 Core 返回什么结构、接口叫什么、错误如何表示，两个 Run 会分别作出不同假设，最终产生冲突、重写和更多 Token 消耗。
+
+这时应：
+
+1. 先完成一个很小的接口设计任务；
+2. 固定 Core ↔ UI Contract；
+3. 再启动两个并行 Run。
+
+### 什么时候拆成不同 Agent 配置
+
+同一个 Agent 配置已经足够的情况：
+
+- 都属于普通 Coding；
+- 使用相同模型、Skills 和 Runtime；
+- 规则差异只与当前任务有关。
+
+值得拆成 Core Agent 与 UI Agent 的情况：
+
+- 长期职责不同；
+- Skills 不同；
+- 修改权限不同；
+- 模型或 Thinking 不同；
+- UI Agent 必须长期禁止修改 Core。
+
+> [!tip]
+> **任务独立性比 Agent 数量更重要；接口稳定性决定并行是否真正提速。**
+
+## 十、从一个任务拆成两个 Run 的成本判断
+
+并行能缩短时间，但可能增加：
+
+- 两份上下文；
+- 两次模型调用链；
+- 接口误解；
+- Merge 冲突；
+- 主 Agent 汇总与 Review。
+
+因此先用一个小设计步骤换取稳定 Contract，往往比盲目并行更省 Token。
+
+
+## 十一、自测
 
 - [ ] 我知道多 Agent 的固定上下文与交接成本。
 - [ ] 我会按可独立验收的工作包拆分。

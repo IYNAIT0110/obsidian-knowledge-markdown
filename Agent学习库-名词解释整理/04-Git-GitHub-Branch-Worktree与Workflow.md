@@ -121,7 +121,62 @@ Git：改了什么、如何回退和合并
 GitHub：怎样共享、审核、测试和发布
 ```
 
-## 十一、自测
+## 十一、在一个 Task 中怎样使用 Branch / Worktree
+
+假设任务是“实现 Tree Analyzer Core”，完整关系是：
+
+```text
+Task：实现 Tree Analyzer Core
+→ 选择 GH Coding Agent
+→ 启动 Run
+→ Branch：feature/tree-core
+→ Worktree：独立 Core 目录
+→ 编码、Build、Test、Commit、Review、Merge
+```
+
+整个链条才属于 Workflow。Branch 和 Worktree只是本次代码工作的版本线与施工现场。
+
+### 新 Branch 是否必须交给新 Agent
+
+**不需要。Branch 不属于 Agent，而属于一次具体代码工作。**
+
+同一个 GH Coding Agent 配置可以连续或并行处理：
+
+```text
+GH Coding Agent
+├─ Task A → Run A → feature/tree-core → Worktree A
+├─ Task B → Run B → feature/tree-ui   → Worktree B
+└─ Task C → Run C → feature/export    → Worktree C
+```
+
+创建新 Branch 不代表必须新建 Agent。只有任务性质由 Coding 变成 Debug、Review、Architecture 等，并且规则和技能确实不同，才考虑换 Agent 配置。
+
+### Task 做到一半怎样分叉 Core 与 UI
+
+当 Core 开发中发现 UI 可以独立并行时，推荐从共同基点拆成两个工作包：
+
+```text
+共同基点
+├─ Task：Core → Run A → feature/core → Worktree A
+└─ Task：UI   → Run B → feature/ui   → Worktree B
+```
+
+两个 Task 可以仍使用同一个 GH Coding Agent 配置。不要让两个并行执行实例在同一个目录里同时修改同一批文件。
+
+### 是否需要额外 Worktree
+
+按顺序判断：
+
+1. 这是不是独立可提交的代码工作？
+2. 若是，创建独立 Branch。
+3. 是否与其他代码工作并行？
+4. 若并行，创建独立 Worktree。
+5. 再让相应 Run 在该目录执行。
+
+串行小任务可以只有 Branch，不必机械创建 Worktree。
+
+
+## 十二、自测
 
 - [ ] 我能区分 Git 和 GitHub。
 - [ ] 我知道 Branch 是逻辑路线，Worktree 是实际目录。

@@ -127,7 +127,67 @@ Skills：懂不懂专业方法
 强模型 + 工具 + Loop：通用 Coding Agent。  
 强模型 + Harness + GH Skills + GH Tools：GH 专用 Agent。
 
-## 五、自测
+## 五、Context 与 Configuration：最容易混淆的新概念
+
+Codex 对话和 Multica Agent 都能记住“角色要求”，所以使用体验会重叠；真正差异在于这些信息主要服务于一次工作，还是被抽成长期模板。
+
+### Context：这次工作发生了什么
+
+```text
+用户目标
++ 本轮追问
++ 已读文件
++ 工具调用与结果
++ 临时约束
++ 当前任务的决定
+```
+
+Context 属于某个 Task / Session。它回答：
+
+> **“这件事从开始到现在发生了什么？”**
+
+例如一个 Codex 对话中，用户先要求修复 Empty Tree Crash，随后补充“不要改 UI”，Agent 又得到 Build 失败结果；这些都是这一次工作的 Context。
+
+### Configuration：以后做这类工作时，它是什么样的 Agent
+
+```text
+Role: GH Debug Engineer
+Model: 强推理模型
+Thinking: High
+Skills: Grasshopper / RhinoCommon / Debugging
+Rules: 先复现、最小修改、修复后测试
+Runtime: Windows GH Dev Machine
+```
+
+Configuration 回答：
+
+> **“无论分配哪个 Bug，这个 AI 工作者应采用什么长期身份和能力配置？”**
+
+### Codex 与 Multica 的边界不是绝对的
+
+Codex 也能通过项目 Instructions、Skills、规则和环境配置跨任务复用能力。因此不能说“Codex 只有临时 Prompt，Multica 才能配置 Agent”。
+
+更准确地说：
+
+- **Codex 对话首先是一次独立工作上下文**，也可以扮演一个 Agent 角色。
+- **Multica Agent 首先是可复用、可管理、可批量调度的角色模板**。
+- 项目规模小时，几个 Codex 任务加清晰的项目规则通常已经够用。
+- 当角色、模型、Skills、Runtime、并发和任务状态需要反复统一管理时，Multica 的价值才明显。
+
+## 六、Task、Session 与 Run
+
+| 对象 | 回答的问题 | 是否长期复用 |
+|---|---|---|
+| Agent Configuration | 谁来做、具备什么能力 | 通常可以 |
+| Task | 要完成什么具体工作 | 通常不复用 |
+| Session / 对话 | 这次工作积累了什么上下文 | 属于这次工作 |
+| Run | 任务的一次实际执行 | 每次执行独立 |
+| Workflow | 从创建任务到测试、审查、合并的完整过程 | 流程模板可复用 |
+
+同一个 Agent Configuration 可以服务多个 Task；同一个 Task 也可能因为重试、并行方案或恢复而产生多个 Run。
+
+
+## 七、自测
 
 - [ ] 我能完整复述 Agent Loop。
 - [ ] 我知道 Tool 与 Skill 的差别。

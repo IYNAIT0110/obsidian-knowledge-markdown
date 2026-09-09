@@ -108,7 +108,76 @@ Multica 像组建车队并安排路线；Harness 像设计每辆车的发动机�
 - Multica：长期多 Agent 角色、大量并行与集中调度。
 - Harness：开发自己的 Agent 产品，需要自定义内部运行机制。
 
-## 十一、自测
+## 十一、Multica 中 Agent、Task、Run 与 Workflow 的层级
+
+> [!important]
+> **Multica 里的不同 Agent 不等于不同 Workflow。**
+
+| 对象 | 核心含义 |
+|---|---|
+| Agent | 谁来做、使用什么长期能力配置 |
+| Task / Issue | 要做什么 |
+| Run | 这一次实际执行 |
+| Branch | 这次代码修改走哪条版本线 |
+| Worktree | 这条版本线在哪个独立目录工作 |
+| Workflow | 从任务创建到执行、测试、Review、Merge 的完整过程 |
+
+```mermaid
+flowchart TD
+    M[Multica] --> T1[Task: Core]
+    M --> T2[Task: UI]
+    A[GH Coding Agent<br/>同一个配置] --> R1[Run A]
+    A --> R2[Run B]
+    T1 --> R1
+    T2 --> R2
+    R1 --> B1[feature/core]
+    R2 --> B2[feature/ui]
+    B1 --> W1[Worktree A]
+    B2 --> W2[Worktree B]
+```
+
+### 一个 Agent 配置可以启动多个 Run
+
+Core 和 UI 都是普通 GH Coding 工作时，不必建立两个角色模板：
+
+```text
+GH Coding Agent
+├─ Run A → Core
+└─ Run B → UI
+```
+
+只有当长期能力明显不同才拆成：
+
+```text
+GH Core Agent
+Rules: 架构、数据结构、SDK、单元测试
+
+GH UI Agent
+Rules: UX、Layout、不修改 Core、只调用公开接口
+```
+
+### Codex 多任务并行怎样理解
+
+Codex 左侧多个任务更接近多个 Task / Session。并行运行时，可以用下面的入门模型理解：
+
+```text
+Codex 通用能力与执行框架
+├─ Task / Session A → Context A → Run A
+├─ Task / Session B → Context B → Run B
+└─ Task / Session C → Context C → Run C
+```
+
+这不是“同一个 AI 脑子同时记着三件事”，而是每个任务拥有独立上下文和执行过程。
+
+### Codex 对话与 Multica Agent 配置
+
+- Codex 对话像“某个工作人员正在处理的一件工作”。
+- Multica Agent 像公司预先定义的岗位说明书。
+- Codex 对话能扮演角色；Multica 把角色正式抽象为可复用、可配置、可批量调度的对象。
+- 任务数量少时，人自己就是调度员；数量多、角色多、并发多时，再由 Multica 产品化管理。
+
+
+## 十二、自测
 
 - [ ] 我能解释 Multica 与 Harness 的层次。
 - [ ] 我知道 Linear / Dashi 管任务，不管代码历史。
